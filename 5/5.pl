@@ -1,15 +1,5 @@
 /* Noob-log */
 
-list_butlast([X|Xs], Ys) :-                 % use auxiliary predicate ...
-   list_butlast_prev(Xs, Ys, X).            % ... which lags behind by one item
-
-list_butlast_prev([], [], _).
-list_butlast_prev([X1|Xs], [X0|Ys], X0) :-  
-   list_butlast_prev(Xs, Ys, X1).           % lag behind by one
-
-append([],X,X).
-append([X|Y],Z,[X|W]) :- append(Y,Z,W).
-
 read_file(Stream,[]) :-
     at_end_of_stream(Stream).
 
@@ -26,6 +16,27 @@ read_file(Stream,[X|L]) :-
     X = [TT1, TT2, TT3],
     read_file(Stream,L), !.
 
+lastN(L,N,R):- length(L,X), X1 is X-N, lastT(L,X1,R).
+lastT(L,0,L).
+lastT([H|T],X,L):- X2 is X-1, lastT(T,X2,L).
+
+list_butlast([X|Xs], Ys) :-                 % use auxiliary predicate ...
+   list_butlast_prev(Xs, Ys, X).            % ... which lags behind by one item
+
+list_butlast_prev([], [], _).
+list_butlast_prev([X1|Xs], [X0|Ys], X0) :-  
+    list_butlast_prev(Xs, Ys, X1).           % lag behind by one
+
+List_butLastN(L, 0, NL) :-
+    NL = L.
+list_butLastN(L, Count, NL) :-
+    list_butlast(L, Y),
+    NewCount is Count - 1,
+    list_butLastN(Y, NewCount, NL).
+
+append([],X,X).
+append([X|Y],Z,[X|W]) :- append(Y,Z,W).
+
 moveBox(S, T, 0, NS, NT) :-
     NS = S,
     NT = T.
@@ -35,22 +46,13 @@ moveBox(S, T, Count, NS, NT) :-
     list_butlast(S, S11),
     NewCount is Count - 1,
     moveBox(S11, Y, NewCount, NS, NT).
-
-
-main :-
-    S1 = ['S', 'T', 'H', 'F', 'W', 'R'],
-    S2 = ['S', 'G', 'D', 'Q', 'W'],
-    S3 = ['B', 'T', 'W'],
-    S4 = ['D', 'R', 'W', 'T', 'N', 'Q', 'Z', 'J'],
-    S5 = ['F', 'B', 'H', 'G', 'L', 'V', 'T', 'Z'],
-    S6 = ['L', 'P', 'T', 'C', 'V', 'B', 'S', 'G'],
-    S7 = ['Z', 'B','R','T','W','G','P'],
-    S8 = ['N','G','M','T','C','J','R'],
-    S9 = ['L','G','B','W'],
-    open('input.txt', read, Str),
-    read_file(Str, Moves),
-    close(Str),
-    doMoves(Moves, S1, S2, S3, S4, S5, S6, S7, S8, S9).
+    
+moveBoxes(S, T, Count, NS, NT) :-
+    lastN(S, Count, Tail),
+    append(T, Tail, Y),
+    list_butLastN(S, Count, Z),
+    NS = Z,
+    NT = Y.
 
 doMoves([], S1, S2, S3, S4, S5, S6, S7, S8, S9) :-
     write("S1: "),write(S1),write("\n"),
@@ -146,3 +148,18 @@ doMoves([H|T], S1, S2, S3, S4, S5, S6, S7, S8, S9) :-
     ( Source is 9, Target is 6 -> moveBox(S9, S6, Count, T1, T2), doMoves(T, S1, S2, S3, S4, S5, T2, S7, S8, T1); true),
     ( Source is 9, Target is 7 -> moveBox(S9, S7, Count, T1, T2), doMoves(T, S1, S2, S3, S4, S5, S6, T2, S8, T1); true),
     ( Source is 9, Target is 8 -> moveBox(S9, S8, Count, T1, T2), doMoves(T, S1, S2, S3, S4, S5, S6, S7, T2, T1); true).
+
+main :-
+    S1 = ['S', 'T', 'H', 'F', 'W', 'R'],
+    S2 = ['S', 'G', 'D', 'Q', 'W'],
+    S3 = ['B', 'T', 'W'],
+    S4 = ['D', 'R', 'W', 'T', 'N', 'Q', 'Z', 'J'],
+    S5 = ['F', 'B', 'H', 'G', 'L', 'V', 'T', 'Z'],
+    S6 = ['L', 'P', 'T', 'C', 'V', 'B', 'S', 'G'],
+    S7 = ['Z', 'B','R','T','W','G','P'],
+    S8 = ['N','G','M','T','C','J','R'],
+    S9 = ['L','G','B','W'],
+    open('input.txt', read, Str),
+    read_file(Str, Moves),
+    close(Str),
+    doMoves(Moves, S1, S2, S3, S4, S5, S6, S7, S8, S9).
