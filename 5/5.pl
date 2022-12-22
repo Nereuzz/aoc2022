@@ -20,12 +20,12 @@ lastN(L,N,R):- length(L,X), X1 is X-N, lastT(L,X1,R).
 lastT(L,0,L).
 lastT([H|T],X,L):- X2 is X-1, lastT(T,X2,L).
 
-list_butlast([X|Xs], Ys) :-                 % use auxiliary predicate ...
-   list_butlast_prev(Xs, Ys, X).            % ... which lags behind by one item
+list_butlast([X|Xs], Ys) :-
+   list_butlast_prev(Xs, Ys, X).
 
 list_butlast_prev([], [], _).
 list_butlast_prev([X1|Xs], [X0|Ys], X0) :-  
-    list_butlast_prev(Xs, Ys, X1).           % lag behind by one
+    list_butlast_prev(Xs, Ys, X1).
 
 List_butLastN(L, 0, NL) :-
     NL = L.
